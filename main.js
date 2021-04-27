@@ -8,23 +8,27 @@ const enemies = []
 
 function setup(){
     createCanvas(width, height)
-
+    frameRate(120)
 }
 
 function draw(){
-  
-   clear()
+    background(0, 0, 0)
     player.style()
 
-    projectiles.forEach(projectile => { //calls the class method update for every projectile in the array
+    projectiles.forEach((projectile, index) => { //calls the class method update for every projectile in the array
         projectile.update()
+        
+        //delete from array lost projectiles from edges of screen
+        deleteLostProjectiles(projectile, index)
+        
     })
 
-    enemies.forEach(enemy => { // calls the class method update for evey projectile in the array
+    enemies.forEach((enemy, index)=> { // calls the class method update for evey projectile in the array
         enemy.update()
-        collitions(enemy)
+        collitions(enemy, index)
+        playerHit(enemy)
     })
-    
+
 }
 
 
@@ -32,7 +36,8 @@ class Player{
     constructor(x, y, radius, color){
         this.x = x
         this.y = y
-        this.radius = radius * 2
+        this.diameter = radius * 2
+        this.radius = radius
         this.color = color
     
     }
@@ -40,7 +45,7 @@ class Player{
     style(){
         noStroke()
         fill(this.color)
-        circle(this.x, this.y, this.radius)
+        circle(this.x, this.y, this.diameter)
     }
 }
 
@@ -48,7 +53,8 @@ class Projectile {
     constructor(x, y, radius, color, velocity) {
         this.x = x
         this.y = y
-        this.radius = radius * 2
+        this.diameter = radius * 2
+        this.radius = radius
         this.color = color
         this.velocity = velocity
     }
@@ -56,7 +62,7 @@ class Projectile {
     style(){
         noStroke()
         fill(this.color)
-        circle(this.x, this.y, this.radius)
+        circle(this.x, this.y, this.diameter)
     }
 
     update(){
@@ -70,7 +76,8 @@ class Enemy {
     constructor(x, y, radius, color, velocity) {
         this.x = x
         this.y = y
-        this.radius = radius * 2
+        this.diameter = radius * 2
+        this.radius = radius
         this.color = color
         this.velocity = velocity
     }
@@ -78,7 +85,7 @@ class Enemy {
     style(){                 //method for styling
         noStroke()
         fill(this.color)
-        circle(this.x, this.y, this.radius)
+        circle(this.x, this.y, this.diameter)
     }
 
     update(){
@@ -90,7 +97,7 @@ class Enemy {
 
 
 
-const player = new Player(x, y, 30, 'blue')
+const player = new Player(x, y, 30, 'white')
 //event listener for all the window expecting a click event
 // (no need for window.addEvent... because its implicit)
 
@@ -98,11 +105,11 @@ function shootProjectile(event){
     
     const angle = Math.atan2(event.clientY - height/ 2, event.clientX - width/2)
     const velocity = {
-        x: Math.cos(angle),
-        y: Math.sin(angle)
+        x: Math.cos(angle) * 5,
+        y: Math.sin(angle) * 5
     }
     // console.log(angle)
-    const projectile = new Projectile(width/ 2, height/2, 5, 'red', velocity)
+    const projectile = new Projectile(width/ 2, height/2, 10, 'white', velocity)
     projectiles.push(projectile)
    
 }
@@ -137,13 +144,50 @@ function spawnEnemies(){
     
 }
 
-function collitions(enemy){                                      // handles collitions
-    projectiles.forEach( projectile => {
+function collitions(enemy, index){                                      // handles collitions
+    
+    projectiles.forEach( (projectile, projectileIndex) => {
+       
         const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y) //distance between projectile and enemy
+        
+        //objects  touch
         if(dist - enemy.radius - projectile.radius < 1){
-            console.log('remove')
+            
+            //trick for deleting flickering 
+            setTimeout(()=>{
+
+                enemies.splice(index, 1)
+                projectiles.splice(projectileIndex, 1)
+            
+            }, 0)
         }
     })
 }
 
-spawnEnemies()
+function playerHit(enemy){
+    const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y)
+
+    if(dist - enemy.radius - player.radius < 1){
+        noLoop()
+        console.log('end game')
+    }
+}
+
+function deleteLostProjectiles(projectile, index){ //delete from array lost projectiles from edges of screen
+    
+    if(
+        projectile.x + projectile.radius < 0     ||
+        projectile.x - projectile.radius > width ||
+        projectile.y + projectile.radius < 0     ||
+        projectile.y - projectile.radius > height
+        ) {
+        setTimeout(()=>{
+
+            projectiles.splice(index, 1)
+        
+        }, 0)
+    }
+
+}
+
+spawnEnemies() 
