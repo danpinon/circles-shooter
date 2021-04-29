@@ -14,12 +14,14 @@ let score = 0
 let mouseDown = false
 let count = 0
 let startGameBtn = false
+let ambient = new Audio('./sfx/empty_ambient.mp3')
 
 function init(){
     player = new Player(x, y, 30, 'white')
     projectiles = []
     enemies =     []
     particles =   []
+    ambient = new Audio('./sfx/empty_ambient.mp3')
 }
 
 function startGame(){
@@ -27,9 +29,18 @@ function startGame(){
     
 }
 
+function ambienAudio(){
+    ambient.loop = true
+    ambient.volume = .70;
+    ambient.play()
+}
+
 function startBtn(){
     document.querySelector('.container-1').style.display = 'none'
     console.log('go')
+    let start = new Audio('./sfx/start-03.mp3')
+    start.volume = 0.4
+    start.play()
 loop()
 }
 
@@ -39,12 +50,15 @@ function setup(){
     startBtnSelec.addEventListener('click', start)
     createCanvas(width, height)
     spawnEnemies()
+    
+    
 }
 
 function draw(){
+    ambienAudio()
     background(0, 0, 20, 10)
     player.style()
-
+    
     projectiles.forEach((projectile, index) => { //calls the class method update for every projectile in the array
         projectile.update()
         
@@ -81,13 +95,8 @@ function mouseUp(){
 }
 function shootProjectile(event){
     
-    
     mouseDown = true
     console.log('down')
-
-        
-
-    
 
     const angle = Math.atan2(event.clientY - height/ 2, event.clientX - width/2)
     const velocity = {
@@ -96,6 +105,10 @@ function shootProjectile(event){
     }
     // console.log(angle)
         const projectile = new Projectile(width/ 2, height/2, 10, 'white', velocity)
+        let laser = new Audio('./sfx/laser.mp3');
+        laser.volume = .30;
+        laser.play();
+
     
     projectiles.push(projectile)
    
@@ -151,8 +164,13 @@ function collitions(enemy, index){                                      // handl
             //shrink enemy
             let shrink = lerp(enemy.radius, enemy.radius -= 10, 1)
             enemy.explotion()
+
+            let hit = new Audio('./sfx/hit.mp3')
+            hit.volume = 0.4
+            hit.play()
             
             setTimeout(()=>{
+
                 projectiles.splice(projectileIndex, 1)
             
             }, 0)
@@ -160,6 +178,11 @@ function collitions(enemy, index){                                      // handl
             //big points score
             addScore(250)
             //set timeout trick for deleting flickering 
+
+            let explotion = new Audio('./sfx/explotion.mp3')
+            explotion.volume = 0.4
+            explotion.play()
+
             setTimeout(()=>{
                 enemy.explotion()
                 enemies.splice(index, 1)
@@ -191,6 +214,10 @@ function playerHit(enemy){
     if(dist - enemy.radius - player.radius < 1){
         noLoop()
         restartBtn()
+        ambient.muted = true
+        let loose = new Audio('./sfx/loose.mp3')
+        loose.volume = 0.1;
+        loose.play()
         init()
     }
 }
