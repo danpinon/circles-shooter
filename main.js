@@ -22,6 +22,8 @@ function init(){
     enemies =     []
     particles =   []
     ambient = new Audio('./sfx/empty_ambient.mp3')
+    score = 0
+    document.querySelector('#score-el').innerHTML = `${score}`
 }
 
 function startGame(){
@@ -50,6 +52,7 @@ function setup(){
     startBtnSelec.addEventListener('click', start)
     createCanvas(width, height)
     spawnEnemies()
+    
     
     
 }
@@ -226,6 +229,7 @@ function restartBtn(){
     startBtnSelec.innerHTML = 'restart'
     document.querySelector('#big-score').innerHTML = `${score}`
     console.log('end game')
+    
 }
 function deleteLostProjectiles(projectile, index){ //delete from array lost projectiles from edges of screen
     
